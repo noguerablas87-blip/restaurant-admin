@@ -9,6 +9,7 @@ export default function Locales() {
   const [locales, setLocales] = useState([])
   const [nuevo, setNuevo] = useState({ slug: '', nombre: '', descripcion: '', color_primario: '#1D9E75', tiempo_prep_min: 15, password: '' })
   const [mostrarForm, setMostrarForm] = useState(false)
+  const [localCreado, setLocalCreado] = useState(null) // Modal con credenciales
 
   const cargar = async () => {
     try {
@@ -20,8 +21,13 @@ export default function Locales() {
   useEffect(() => { cargar() }, [])
 
   const crearLocal = async () => {
+    if (!nuevo.slug || !nuevo.nombre || !nuevo.password) {
+      alert('Slug, nombre y contraseña son obligatorios')
+      return
+    }
     try {
-      await axios.post(`${API}/locales/`, nuevo)
+      const res = await axios.post(`${API}/locales/`, nuevo)
+      setLocalCreado({ slug: nuevo.slug, password: nuevo.password, nombre: nuevo.nombre })
       setNuevo({ slug: '', nombre: '', descripcion: '', color_primario: '#1D9E75', tiempo_prep_min: 15, password: '' })
       setMostrarForm(false)
       cargar()
@@ -37,6 +43,38 @@ export default function Locales() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0f0f1a', fontFamily: 'system-ui, sans-serif' }}>
+
+      {/* Modal credenciales local creado */}
+      {localCreado && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <div style={{ background: 'white', borderRadius: 20, padding: 32, maxWidth: 400, width: '100%', textAlign: 'center' }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
+            <h2 style={{ margin: '0 0 8px', color: '#111' }}>Local creado exitosamente</h2>
+            <p style={{ color: '#888', fontSize: 14, margin: '0 0 24px' }}>Guardá estas credenciales para entregárselas al dueño</p>
+            <div style={{ background: '#f8f8f8', borderRadius: 12, padding: 20, marginBottom: 20, textAlign: 'left' }}>
+              <p style={{ margin: '0 0 8px', fontSize: 13, color: '#555' }}>
+                <strong>Local:</strong> {localCreado.nombre}
+              </p>
+              <p style={{ margin: '0 0 8px', fontSize: 13, color: '#555' }}>
+                <strong>URL de login:</strong> restaurant-tablet.vercel.app/login
+              </p>
+              <p style={{ margin: '0 0 8px', fontSize: 13, color: '#555' }}>
+                <strong>Slug:</strong> {localCreado.slug}
+              </p>
+              <p style={{ margin: 0, fontSize: 13, color: '#555' }}>
+                <strong>Contraseña:</strong> {localCreado.password}
+              </p>
+            </div>
+            <button onClick={() => setLocalCreado(null)} style={{
+              width: '100%', background: '#1D9E75', color: 'white', border: 'none',
+              borderRadius: 12, padding: '13px', fontSize: 15, fontWeight: 700, cursor: 'pointer'
+            }}>
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
+
       <div style={{ background: '#1a1a2e', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 style={{ color: 'white', margin: 0, fontSize: 20, fontWeight: 700 }}>⚙️ Panel Admin</h1>
